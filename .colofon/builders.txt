@@ -1,17 +1,21 @@
 # Approved-builder Fulcio identities for colofon-examples releases.
 #
-# When a tag matching `v*` is pushed, `.github/workflows/release.yml`
-# runs from the workflow file on the default branch and produces a
-# Fulcio-signed SLSA attestation whose SAN URI matches one of the
-# entries below. The first line is the primary signer identity; the
-# remaining entries form the approved-builder Merkle set baked into
-# every Colofon proof.
+# Fulcio-issued SAN URIs pin the workflow file + the ref it ran
+# from. For tag-triggered workflows the ref is `refs/tags/<tag>`;
+# for branch-triggered workflows it's `refs/heads/<branch>`. Each
+# distinct (workflow, ref) pair is a distinct identity in the
+# approved-builder Merkle set baked into every Colofon proof.
 #
-# Updating the workflow ref (e.g. renaming the release workflow file
-# or moving the default branch) requires updating this file in the
-# same commit — otherwise the next release will produce a bundle
-# whose signer identity fails the approved-set check.
+# The first line is the signer identity of the release this commit
+# targets; additional lines form the rest of the approved-builder
+# Merkle set.
+#
+# KNOWN LIMITATION: every new tag requires an entry in this file
+# because the circuit's approved-builder check is by exact identity
+# hash. A future circuit revision could hash just the workflow
+# path (without the ref) so any tag under the same workflow
+# verifies without this file being updated. Tracking as a planned
+# hardening step.
 #
 # Lines starting with `#` and blank lines are ignored.
-https://github.com/colofonhq/colofon-examples/.github/workflows/release.yml@refs/heads/main
-https://github.com/colofonhq/colofon-examples/.github/workflows/ci.yml@refs/heads/main
+https://github.com/colofonhq/colofon-examples/.github/workflows/release.yml@refs/tags/v0.1.0
