@@ -36,11 +36,17 @@ jobs:
 
       - name: Stamp version
         run: |
-          # Pull the tag (minus leading `v`) into the built bin so
-          # `colofon-example version` prints something real.
+          # Pull the tag (minus leading `v`) into both the built bin
+          # and package.json so `colofon-example version` prints
+          # something real and `npm pack` emits a correctly-named
+          # tarball (e.g. colofon-example-cli-0.1.0.tgz, not
+          # colofon-example-cli-0.0.0.tgz).
           version="${GITHUB_REF_NAME#v}"
           echo "RELEASE_VERSION=$version" >> "$GITHUB_ENV"
           sed -i "s|__COLOFON_EXAMPLE_CLI_VERSION__|$version|g" src/index.ts
+          # `npm version --no-git-tag-version` rewrites the version
+          # field in-place without trying to commit or tag.
+          npm version --no-git-tag-version "$version"
 
       - name: Build
         run: npm run build
