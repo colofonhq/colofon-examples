@@ -13,7 +13,7 @@ A tiny Node CLI, `@colofon/example-cli`, that exists only to be a real release. 
 3. Runs [`colofonhq/colofon-agent`](https://github.com/colofonhq/colofon-agent) to wrap that attestation into a Colofon proof bundle against the approved-builder set in [`.colofon/builders.txt`](.colofon/builders.txt).
 4. Uploads all three artefacts — tarball, SLSA bundle, Colofon bundle — to the GitHub release.
 
-Anyone can verify the Colofon bundle client-side at [colofon-verifier](https://github.com/colofonhq/colofon-verifier) without seeing the rest of the build log.
+Anyone can verify the Colofon bundle client-side at **[colofon-verifier.vercel.app/verify](https://colofon-verifier.vercel.app/verify)** without seeing the rest of the build log. The verifier page also has a "Try the sample" link that runs a real proof (cli/cli v2.90.0 Linux build) locally in the browser.
 
 ## Trying it
 
@@ -32,7 +32,7 @@ jq -r '.metadata.binaryDigestSha256' colofon-bundle.json
 # The two values should be identical.
 
 # Drop colofon-bundle.json into the browser verifier:
-open https://<your-vercel-url>/verify
+open https://colofon-verifier.vercel.app/verify
 ```
 
 ## What this demo proves
