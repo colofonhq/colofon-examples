@@ -18,4 +18,5 @@
 # hardening step.
 #
 # Lines starting with `#` and blank lines are ignored.
+https://github.com/colofonhq/colofon-examples/.github/workflows/release.yml@refs/tags/v0.1.1
 https://github.com/colofonhq/colofon-examples/.github/workflows/release.yml@refs/tags/v0.1.0
