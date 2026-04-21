@@ -1,0 +1,23 @@
+{
+  "name": "@colofon/example-cli",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Reference consumer of colofon-agent: a tiny CLI whose release tarball ships with a Colofon proof bundle.",
+  "type": "module",
+  "bin": {
+    "colofon-example": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.6.0"
+  }
+}

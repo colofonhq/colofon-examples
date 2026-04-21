@@ -1,0 +1,17 @@
+# Approved-builder Fulcio identities for colofon-examples releases.
+#
+# When a tag matching `v*` is pushed, `.github/workflows/release.yml`
+# runs from the workflow file on the default branch and produces a
+# Fulcio-signed SLSA attestation whose SAN URI matches one of the
+# entries below. The first line is the primary signer identity; the
+# remaining entries form the approved-builder Merkle set baked into
+# every Colofon proof.
+#
+# Updating the workflow ref (e.g. renaming the release workflow file
+# or moving the default branch) requires updating this file in the
+# same commit — otherwise the next release will produce a bundle
+# whose signer identity fails the approved-set check.
+#
+# Lines starting with `#` and blank lines are ignored.
+https://github.com/colofonhq/colofon-examples/.github/workflows/release.yml@refs/heads/main
+https://github.com/colofonhq/colofon-examples/.github/workflows/ci.yml@refs/heads/main

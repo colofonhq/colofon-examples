@@ -1,0 +1,81 @@
+name: Release
+
+# End-to-end demo: on every `v*` tag, build the CLI tarball, generate
+# a SLSA attestation, wrap it in a Colofon proof bundle, and upload
+# both to the GitHub release. Downstream consumers can then verify
+# the bundle client-side via https://github.com/colofonhq/colofon-verifier
+# without seeing any internal build metadata.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # create releases + upload assets
+  id-token: write   # OIDC for Fulcio / SLSA attestation
+  attestations: write # actions/attest-build-provenance
+
+jobs:
+  release:
+    name: build + attest + colofon-wrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 @ 2025-11-13
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 @ 2025-04-02
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Stamp version
+        run: |
+          # Pull the tag (minus leading `v`) into the built bin so
+          # `colofon-example version` prints something real.
+          version="${GITHUB_REF_NAME#v}"
+          echo "RELEASE_VERSION=$version" >> "$GITHUB_ENV"
+          sed -i "s|__COLOFON_EXAMPLE_CLI_VERSION__|$version|g" src/index.ts
+
+      - name: Build
+        run: npm run build
+
+      - name: Pack tarball
+        id: pack
+        run: |
+          # npm pack emits {name}-{version}.tgz. Since our package name
+          # is scoped (@colofon/example-cli), the file is
+          # colofon-example-cli-{version}.tgz.
+          tarball=$(npm pack | tail -1)
+          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+
+      - name: Generate SLSA attestation
+        id: attest
+        uses: actions/attest-build-provenance@92c65d2898f1f53cfdc910b962cecff86e7f8fcc # v1 latest
+        with:
+          subject-path: ${{ steps.pack.outputs.tarball }}
+
+      - name: Generate Colofon proof bundle
+        id: colofon
+        uses: colofonhq/colofon-agent@main
+        with:
+          attestation-bundle: ${{ steps.attest.outputs.bundle-path }}
+          approved-builders-file: .colofon/builders.txt
+          output-path: colofon-bundle.json
+          sdk-token: ${{ secrets.COLOFON_AGENT_TOKEN }}
+
+      - name: Create release with tarball + attestation + bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "${{ steps.pack.outputs.tarball }}" \
+            "${{ steps.attest.outputs.bundle-path }}#slsa-attestation.json" \
+            "${{ steps.colofon.outputs.bundle-path }}#colofon-bundle.json" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
