@@ -60,9 +60,29 @@ jobs:
         with:
           subject-path: ${{ steps.pack.outputs.tarball }}
 
+      # GitHub Actions can't resolve private cross-repo action
+      # references with the default GITHUB_TOKEN, so check out the
+      # agent with our PAT and reference it via a local path. Once
+      # colofon-agent is public we can drop back to `uses:
+      # colofonhq/colofon-agent@<sha>`.
+      #
+      # `ref` pinned to a specific agent commit so each release
+      # compiles against a reproducible agent revision.
+      # `persist-credentials: false` flushes the PAT from
+      # .git/config after checkout so later steps in this job
+      # can't harvest it from the filesystem.
+      - name: Checkout colofon-agent
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 @ 2025-11-13
+        with:
+          repository: colofonhq/colofon-agent
+          ref: c53f922604d8450eabed007aff34325aa8e46351 # main @ 2026-04-21
+          token: ${{ secrets.COLOFON_AGENT_TOKEN }}
+          path: .colofon/agent
+          persist-credentials: false
+
       - name: Generate Colofon proof bundle
         id: colofon
-        uses: colofonhq/colofon-agent@main
+        uses: ./.colofon/agent
         with:
           attestation-bundle: ${{ steps.attest.outputs.bundle-path }}
           approved-builders-file: .colofon/builders.txt
